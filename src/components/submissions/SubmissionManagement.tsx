@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -75,7 +74,6 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
 
   // Form state
   const [formData, setFormData] = useState<SubmissionFormData>({
-    name: "",
     submission_type: "",
     product_id: "",
     target_submission_date: "",
@@ -107,7 +105,6 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
     if (selectedSubmission) {
       console.log("Opening edit dialog for submission:", selectedSubmission);
       setFormData({
-        name: selectedSubmission.name,
         submission_type: selectedSubmission.submission_type || "",
         product_id: selectedSubmission.product_id,
         target_submission_date: selectedSubmission.target_submission_date || "",
@@ -131,7 +128,6 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
 
   const resetForm = () => {
     setFormData({
-      name: "",
       submission_type: "",
       product_id: "",
       target_submission_date: "",
@@ -281,16 +277,10 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
                 mt: 1,
               }}
             >
-              <TextField
-                label="Submission Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="e.g., Health Canada Medical Device License Application"
-                required
-                fullWidth
-              />
+              <Alert severity="info" sx={{ mb: 1 }}>
+                A submission number will be auto-generated for the selected
+                product (e.g. 0000, 0001, 0002...).
+              </Alert>
               <FormControl fullWidth required>
                 <InputLabel>Product</InputLabel>
                 <Select
@@ -363,9 +353,7 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
           <Button
             onClick={handleCreateSubmission}
             variant="contained"
-            disabled={
-              !formData.name.trim() || !formData.product_id || loading.isLoading
-            }
+            disabled={!formData.product_id || loading.isLoading}
           >
             {loading.isLoading ? "Creating..." : "Create Submission"}
           </Button>
@@ -395,16 +383,6 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
                 mt: 1,
               }}
             >
-              <TextField
-                label="Submission Name"
-                value={formData.name}
-                onChange={(e) => {
-                  console.log("Edit dialog - Name changed to:", e.target.value);
-                  setFormData({ ...formData, name: e.target.value });
-                }}
-                required
-                fullWidth
-              />
               <FormControl fullWidth required>
                 <InputLabel>Product</InputLabel>
                 <Select
@@ -488,9 +466,7 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
           <Button
             onClick={handleEditSubmission}
             variant="contained"
-            disabled={
-              !formData.name.trim() || !formData.product_id || loading.isLoading
-            }
+            disabled={!formData.product_id || loading.isLoading}
           >
             {loading.isLoading ? "Updating..." : "Update Submission"}
           </Button>
@@ -505,8 +481,9 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
         <DialogTitle>Delete Submission</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete "{selectedSubmission?.name}"? This
-            action cannot be undone.
+            Are you sure you want to delete submission #
+            {selectedSubmission?.sequence_number ?? "—"}?
+            This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -577,7 +554,7 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
                       </Avatar>
                       <Box>
                         <Typography variant="h6" component="h3">
-                          {submission.name}
+                          Submission #{submission.sequence_number}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {getProductName(submission.product_id)}

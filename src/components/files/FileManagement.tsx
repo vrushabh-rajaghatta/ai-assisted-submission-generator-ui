@@ -269,10 +269,13 @@ const FileManagement: React.FC<FileManagementProps> = ({
 
       if (!result) return;
 
-      const errorCount = Array.isArray(result.errors) ? result.errors.length : 0;
+      const errorCount = Array.isArray(result.errors)
+        ? result.errors.length
+        : 0;
       let message = `Auto-population completed! ${result.sections_updated ?? 0} sections updated from ${result.files_processed ?? 0}/${result.total_files ?? 0} files.`;
       if (errorCount > 0) {
-        message += `\n\n${errorCount} file(s) had errors:\n` +
+        message +=
+          `\n\n${errorCount} file(s) had errors:\n` +
           result.errors
             .slice(0, 5)
             .map((e: any) => `• ${e.filename}: ${e.error}`)
@@ -351,7 +354,7 @@ const FileManagement: React.FC<FileManagementProps> = ({
   const getSubmissionName = (submissionId?: string): string => {
     if (!submissionId) return "Project Files";
     const submission = submissions.find((s) => s.id === submissionId);
-    return submission?.name || "Unknown Submission";
+    return submission?.sequence_number || "Unknown Submission";
   };
 
   // Debug logging
@@ -401,7 +404,7 @@ const FileManagement: React.FC<FileManagementProps> = ({
                   <MenuItem value="">Project Files (No Submission)</MenuItem>
                   {submissions.map((submission) => (
                     <MenuItem key={submission.id} value={submission.id}>
-                      {submission.name}
+                      Submission #{submission.sequence_number}
                     </MenuItem>
                   ))}
                 </Select>
@@ -662,7 +665,7 @@ const FileManagement: React.FC<FileManagementProps> = ({
                 <MenuItem value="">Project Files (No Submission)</MenuItem>
                 {submissions.map((submission) => (
                   <MenuItem key={submission.id} value={submission.id}>
-                    {submission.name}
+                    Submission #{submission.sequence_number}
                   </MenuItem>
                 ))}
               </Select>

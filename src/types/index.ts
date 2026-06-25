@@ -33,7 +33,7 @@ export interface Submission {
   id: string;
   project_id: string;
   product_id: string;
-  name: string;
+  sequence_number: string;
   submission_type?: string;
   status: SubmissionStatus;
   health_canada_reference?: string;
@@ -251,7 +251,7 @@ export interface ProductFormData {
 }
 
 export interface SubmissionFormData {
-  name: string;
+  sequence_number: string;
   submission_type?: string;
   product_id: string;
   target_submission_date?: string;

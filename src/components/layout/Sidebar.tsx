@@ -234,7 +234,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
                 Current Submission
               </Typography>
               <Chip
-                label={state.currentSubmission.name}
+                label={`#${state.currentSubmission.sequence_number}`}
                 size="small"
                 color="secondary"
                 variant="outlined"

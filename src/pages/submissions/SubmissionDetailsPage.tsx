@@ -27,7 +27,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -57,11 +56,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
-import {
-  Submission,
-  SubmissionStatus,
-  SubmissionFormData,
-} from "../../types";
+import { Submission, SubmissionStatus, SubmissionFormData } from "../../types";
 import {
   useSubmissions,
   useProjects,
@@ -114,7 +109,7 @@ const SubmissionDetailsPage: React.FC = () => {
 
   // Form state for editing
   const [formData, setFormData] = useState<SubmissionFormData>({
-    name: "",
+    sequence_number: "",
     submission_type: "",
     product_id: "",
     target_submission_date: "",
@@ -140,7 +135,7 @@ const SubmissionDetailsPage: React.FC = () => {
 
       // Set form data for editing
       setFormData({
-        name: submissionData.name,
+        sequence_number: submissionData.sequence_number,
         submission_type: submissionData.submission_type || "",
         product_id: submissionData.product_id,
         target_submission_date: submissionData.target_submission_date || "",
@@ -306,12 +301,14 @@ const SubmissionDetailsPage: React.FC = () => {
                 Submissions
               </Link>
               <Typography variant="body2" color="text.primary">
-                {submission.name}
+                Submission #{submission.sequence_number}
               </Typography>
             </Breadcrumbs>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Typography variant="h4">{submission.name}</Typography>
+              <Typography variant="h4">
+                Submission #{submission.sequence_number}
+              </Typography>
               <Chip
                 label={submission.status.replace("_", " ").toUpperCase()}
                 color={getStatusColor(submission.status)}
@@ -456,8 +453,8 @@ const SubmissionDetailsPage: React.FC = () => {
                   <List>
                     <ListItem>
                       <ListItemText
-                        primary="Submission Name"
-                        secondary={submission.name}
+                        primary="Submission Number"
+                        secondary={submission.sequence_number}
                       />
                     </ListItem>
                     <Divider />
@@ -647,15 +644,6 @@ const SubmissionDetailsPage: React.FC = () => {
             <Box
               sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
             >
-              <TextField
-                label="Submission Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-                fullWidth
-              />
               <FormControl fullWidth>
                 <InputLabel>Submission Type</InputLabel>
                 <Select
@@ -727,11 +715,7 @@ const SubmissionDetailsPage: React.FC = () => {
             <Button
               onClick={handleEditSubmission}
               variant="contained"
-              disabled={
-                !formData.name.trim() ||
-                !formData.product_id ||
-                loading.isLoading
-              }
+              disabled={!formData.product_id || loading.isLoading}
             >
               {loading.isLoading ? "Updating..." : "Update Submission"}
             </Button>
@@ -746,9 +730,9 @@ const SubmissionDetailsPage: React.FC = () => {
           <DialogTitle>Delete Submission</DialogTitle>
           <DialogContent>
             <Typography>
-              Are you sure you want to delete "{submission.name}"? This action
-              cannot be undone and will also delete all associated dossier
-              content and files.
+              Are you sure you want to delete submission #
+              {submission.sequence_number}? This action cannot be undone and
+              will also delete all associated dossier content and files.
             </Typography>
           </DialogContent>
           <DialogActions>

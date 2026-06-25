@@ -18,6 +18,25 @@ import {
   BatchUploadResult,
 } from "../types";
 
+// Strip empty-string optional fields so the backend (Pydantic) doesn't
+// reject them as invalid values for typed fields like `date`.
+function sanitizeSubmissionPayload<T extends Partial<SubmissionFormData>>(
+  data: T,
+): T {
+  const cleaned: any = { ...data };
+  const optionalFields: (keyof SubmissionFormData)[] = [
+    "submission_type",
+    "target_submission_date",
+    "created_by",
+  ];
+  for (const field of optionalFields) {
+    if (cleaned[field] === "") {
+      delete cleaned[field];
+    }
+  }
+  return cleaned;
+}
+
 class ApiService {
   private api: AxiosInstance;
 
@@ -297,7 +316,7 @@ class ApiService {
   ): Promise<Submission> {
     const response: AxiosResponse<Submission> = await this.api.post(
       "/submissions/",
-      { ...data, project_id: projectId },
+      { ...sanitizeSubmissionPayload(data), project_id: projectId },
     );
     return response.data;
   }
@@ -308,7 +327,7 @@ class ApiService {
   ): Promise<Submission> {
     const response: AxiosResponse<Submission> = await this.api.put(
       `/submissions/${id}`,
-      data,
+      sanitizeSubmissionPayload(data),
     );
     return response.data;
   }

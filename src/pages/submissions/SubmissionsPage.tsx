@@ -72,9 +72,10 @@ const SubmissionsPage: React.FC = () => {
 
   // Filter submissions based on current filters
   const filteredSubmissions = submissions.filter((submission) => {
-    const matchesSearch = !searchTerm || 
-      submission.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (submission.submission_type && submission.submission_type.toLowerCase().includes(searchTerm.toLowerCase()));
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm ||
+      (submission.sequence_number && submission.sequence_number.toLowerCase().includes(term)) ||
+      (submission.submission_type && submission.submission_type.toLowerCase().includes(term));
     
     const matchesStatus = statusFilter === 'all' || submission.status === statusFilter;
     const matchesProject = projectFilter === 'all' || submission.project_id === projectFilter;
@@ -472,7 +473,7 @@ const SubmissionsPage: React.FC = () => {
                       </Avatar>
                       <Box>
                         <Typography variant="h6" component="h3">
-                          {submission.name}
+                          Submission #{submission.sequence_number}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {getProjectName(submission.project_id)}
