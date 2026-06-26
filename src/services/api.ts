@@ -401,6 +401,7 @@ class ApiService {
   async uploadFile(
     file: File,
     projectId: string,
+    productId?: string,
     submissionId?: string,
     uploadPurpose?: string,
     uploadedBy?: string,
@@ -412,6 +413,7 @@ class ApiService {
     const config = {
       params: {
         project_id: projectId,
+        ...(productId && { product_id: productId }),
         ...(submissionId && { submission_id: submissionId }),
         ...(uploadPurpose && { upload_purpose: uploadPurpose }),
         ...(uploadedBy && { uploaded_by: uploadedBy }),
@@ -442,6 +444,7 @@ class ApiService {
   async uploadMultipleFiles(
     files: File[],
     projectId: string,
+    productId?: string,
     submissionId?: string,
     onProgress?: (progress: number) => void,
   ): Promise<BatchUploadResult> {
@@ -451,6 +454,7 @@ class ApiService {
     const config = {
       params: {
         project_id: projectId,
+        ...(productId && { product_id: productId }),
         ...(submissionId && { submission_id: submissionId }),
       },
       onUploadProgress: (progressEvent: any) => {

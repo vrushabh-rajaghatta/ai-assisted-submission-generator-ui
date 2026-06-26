@@ -25,6 +25,7 @@ import {
   Insights as InsightsIcon
 } from '@mui/icons-material';
 import { useAI } from '../../hooks/useAI';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AIDashboardProps {
   submissionId?: string;
@@ -32,6 +33,8 @@ interface AIDashboardProps {
 
 const AIDashboard: React.FC<AIDashboardProps> = ({ submissionId }) => {
   const { analyzeSubmission, getStats, autoPopulate, processing, error } = useAI();
+  const { user } = useAuth();
+  const isSuperAdmin = Boolean(user?.is_super_admin);
   const [submissionAnalysis, setSubmissionAnalysis] = useState<any>(null);
   const [globalStats, setGlobalStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -40,9 +43,13 @@ const AIDashboard: React.FC<AIDashboardProps> = ({ submissionId }) => {
     setLoading(true);
     
     try {
-      // Load global stats
-      const stats = await getStats();
-      setGlobalStats(stats);
+      // Load global stats only for super admins.
+      if (isSuperAdmin) {
+        const stats = await getStats();
+        setGlobalStats(stats);
+      } else {
+        setGlobalStats(null);
+      }
 
       // Load submission-specific analysis if submissionId provided
       if (submissionId) {
@@ -54,7 +61,7 @@ const AIDashboard: React.FC<AIDashboardProps> = ({ submissionId }) => {
     } finally {
       setLoading(false);
     }
-  }, [submissionId, getStats, analyzeSubmission]);
+  }, [submissionId, getStats, analyzeSubmission, isSuperAdmin]);
 
   useEffect(() => {
     loadData();

@@ -444,11 +444,35 @@ const ProductManagement: React.FC<ProductManagementProps> = ({
               fullWidth
             />
             <TextField
+              label="Device Type"
+              value={formData.device_type}
+              onChange={(e) => setFormData({ ...formData, device_type: e.target.value })}
+              placeholder="e.g., Blood Glucose Monitor, Surgical Instrument"
+              required
+              fullWidth
+            />
+            <TextField
+              label="Intended Use"
+              value={formData.intended_use}
+              onChange={(e) => setFormData({ ...formData, intended_use: e.target.value })}
+              placeholder="Clinical purpose and intended patient population"
+              multiline
+              rows={2}
+              required
+              fullWidth
+            />
+            <TextField
               label="Description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               multiline
               rows={3}
+              fullWidth
+            />
+            <TextField
+              label="Manufacturer"
+              value={formData.manufacturer}
+              onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
               fullWidth
             />
             <FormControl fullWidth>

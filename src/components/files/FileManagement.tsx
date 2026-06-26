@@ -46,7 +46,7 @@ import {
 } from "@mui/icons-material";
 import { useDropzone } from "react-dropzone";
 
-import { UploadedFile, FileType, Submission } from "../../types";
+import { UploadedFile, FileType, Submission, Product } from "../../types";
 import { useFiles } from "../../hooks";
 import { useAI } from "../../hooks/useAI";
 
@@ -54,6 +54,7 @@ interface FileManagementProps {
   projectId: string;
   files: UploadedFile[];
   submissions: Submission[];
+  products?: Product[];
   onFilesChange?: () => void;
   /** When set (e.g. submission details page), uploads default to this submission */
   defaultSubmissionId?: string;
@@ -63,6 +64,7 @@ const FileManagement: React.FC<FileManagementProps> = ({
   projectId,
   files,
   submissions,
+  products = [],
   onFilesChange,
   defaultSubmissionId,
 }) => {
@@ -80,7 +82,6 @@ const FileManagement: React.FC<FileManagementProps> = ({
     extractText,
     autoPopulate,
     processing: aiProcessing,
-    error: aiError,
   } = useAI();
 
   // State
@@ -94,6 +95,7 @@ const FileManagement: React.FC<FileManagementProps> = ({
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string>(
     () => defaultSubmissionId ?? "",
   );
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [uploadPurpose, setUploadPurpose] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -101,8 +103,14 @@ const FileManagement: React.FC<FileManagementProps> = ({
   useEffect(() => {
     if (defaultSubmissionId) {
       setSelectedSubmissionId(defaultSubmissionId);
+      const submission = submissions.find((s) => s.id === defaultSubmissionId);
+      setSelectedProductId(submission?.product_id || "");
     }
-  }, [defaultSubmissionId]);
+  }, [defaultSubmissionId, submissions]);
+
+  const submissionsForSelectedProduct = selectedProductId
+    ? submissions.filter((s) => s.product_id === selectedProductId)
+    : [];
 
   // Filter files
   const filteredFiles = files.filter((file) => {
@@ -146,11 +154,24 @@ const FileManagement: React.FC<FileManagementProps> = ({
     setIsUploading(true);
     setError(null);
 
+    const selectedSubmission = submissions.find(
+      (s) => s.id === selectedSubmissionId,
+    );
+    const effectiveProductId =
+      selectedSubmission?.product_id || selectedProductId;
+
+    if (!effectiveProductId) {
+      setError("Please select a product (or submission) before uploading.");
+      setIsUploading(false);
+      return;
+    }
+
     try {
       if (acceptedFiles.length === 1) {
         await uploadFile(
           acceptedFiles[0],
           projectId,
+          effectiveProductId,
           selectedSubmissionId || undefined,
           uploadPurpose || undefined,
           "Current User",
@@ -159,6 +180,7 @@ const FileManagement: React.FC<FileManagementProps> = ({
         await uploadMultipleFiles(
           acceptedFiles,
           projectId,
+          effectiveProductId,
           selectedSubmissionId || undefined,
         );
       }
@@ -272,7 +294,9 @@ const FileManagement: React.FC<FileManagementProps> = ({
       const errorCount = Array.isArray(result.errors)
         ? result.errors.length
         : 0;
-      let message = `Auto-population completed! ${result.sections_updated ?? 0} sections updated from ${result.files_processed ?? 0}/${result.total_files ?? 0} files.`;
+      let message =
+        result.message ||
+        `Auto-population completed! ${result.sections_updated ?? 0} sections updated from ${result.files_processed ?? 0}/${result.total_files ?? 0} files.`;
       if (errorCount > 0) {
         message +=
           `\n\n${errorCount} file(s) had errors:\n` +
@@ -293,6 +317,9 @@ const FileManagement: React.FC<FileManagementProps> = ({
 
   const resetUploadForm = () => {
     setSelectedSubmissionId(defaultSubmissionId ?? "");
+    if (!defaultSubmissionId) {
+      setSelectedProductId("");
+    }
     setUploadPurpose("");
     setError(null);
   };
@@ -394,21 +421,54 @@ const FileManagement: React.FC<FileManagementProps> = ({
                 Files will be uploaded and linked to this submission.
               </Typography>
             ) : (
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Associate with Submission (Optional)</InputLabel>
-                <Select
-                  value={selectedSubmissionId}
-                  onChange={(e) => setSelectedSubmissionId(e.target.value)}
-                  label="Associate with Submission (Optional)"
-                >
-                  <MenuItem value="">Project Files (No Submission)</MenuItem>
-                  {submissions.map((submission) => (
-                    <MenuItem key={submission.id} value={submission.id}>
-                      Submission #{submission.sequence_number}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <>
+                <FormControl fullWidth sx={{ mb: 2 }} required>
+                  <InputLabel>Product</InputLabel>
+                  <Select
+                    value={selectedProductId}
+                    onChange={(e) => {
+                      const nextProductId = e.target.value;
+                      setSelectedProductId(nextProductId);
+
+                      if (selectedSubmissionId) {
+                        const selectedSubmission = submissions.find(
+                          (s) => s.id === selectedSubmissionId,
+                        );
+                        if (
+                          selectedSubmission &&
+                          selectedSubmission.product_id !== nextProductId
+                        ) {
+                          setSelectedSubmissionId("");
+                        }
+                      }
+                    }}
+                    label="Product"
+                  >
+                    {products.map((product) => (
+                      <MenuItem key={product.id} value={product.id}>
+                        {product.name} ({product.device_type})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>Associate with Submission (Optional)</InputLabel>
+                  <Select
+                    value={selectedSubmissionId}
+                    onChange={(e) => setSelectedSubmissionId(e.target.value)}
+                    label="Associate with Submission (Optional)"
+                    disabled={!selectedProductId}
+                  >
+                    <MenuItem value="">Product Files (No Submission)</MenuItem>
+                    {submissionsForSelectedProduct.map((submission) => (
+                      <MenuItem key={submission.id} value={submission.id}>
+                        Submission #{submission.sequence_number}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </>
             )}
 
             <TextField

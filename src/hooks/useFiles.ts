@@ -49,6 +49,7 @@ export const useFiles = () => {
   const uploadFile = useCallback(async (
     file: File,
     projectId: string,
+    productId?: string,
     submissionId?: string,
     uploadPurpose?: string,
     uploadedBy?: string
@@ -68,6 +69,7 @@ export const useFiles = () => {
       const uploadedFile = await apiService.uploadFile(
         file,
         projectId,
+        productId,
         submissionId,
         uploadPurpose,
         uploadedBy,
@@ -97,6 +99,7 @@ export const useFiles = () => {
   const uploadMultipleFiles = useCallback(async (
     filesToUpload: File[],
     projectId: string,
+    productId?: string,
     submissionId?: string
   ): Promise<BatchUploadResult> => {
     // Initialize progress for all files
@@ -121,6 +124,7 @@ export const useFiles = () => {
       const result = await apiService.uploadMultipleFiles(
         filesToUpload,
         projectId,
+        productId,
         submissionId,
         (progress) => {
           // Update overall progress

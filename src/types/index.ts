@@ -67,6 +67,7 @@ export interface DossierSection {
 export interface UploadedFile {
   id: string;
   project_id: string;
+  product_id?: string;
   submission_id?: string;
   original_filename: string;
   stored_filename: string;

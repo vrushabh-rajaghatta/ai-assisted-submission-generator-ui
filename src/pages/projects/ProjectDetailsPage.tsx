@@ -416,6 +416,7 @@ const ProjectDetailsPage: React.FC = () => {
             projectId={projectId!}
             files={files}
             submissions={submissions}
+            products={products}
             onFilesChange={() => loadFiles(projectId)}
           />
         </TabPanel>
