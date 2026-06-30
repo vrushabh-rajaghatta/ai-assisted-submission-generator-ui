@@ -31,6 +31,7 @@ import AdminPage from "./pages/admin/AdminPage";
 import UsersPage from "./pages/admin/UsersPage";
 import RegulatoryAdminPage from "./pages/admin/RegulatoryAdminPage";
 import ConfigurationRegistryPage from "./pages/admin/ConfigurationRegistryPage";
+import TemplatesPage from "./pages/admin/TemplatesPage";
 
 // Error boundary
 import ErrorBoundary from "./components/common/ErrorBoundary";
@@ -140,6 +141,14 @@ const App: React.FC = () => {
                               element={
                                 <RequireAuth requireAdmin>
                                   <ConfigurationRegistryPage />
+                                </RequireAuth>
+                              }
+                            />
+                            <Route
+                              path="/admin/templates"
+                              element={
+                                <RequireAuth requireAdmin>
+                                  <TemplatesPage />
                                 </RequireAuth>
                               }
                             />

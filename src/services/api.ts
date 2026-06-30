@@ -30,6 +30,8 @@ import {
   RegTemplateVersion,
   RegRequiredDocument,
   RegTemplateSection,
+  RegTemplateSectionNode,
+  RegTemplateCatalogEntry,
   RegValidationRule,
 } from "../types";
 
@@ -1045,6 +1047,25 @@ class ApiService {
     const response: AxiosResponse<RegTemplateSection[]> = await this.api.get(
       `/regulatory/template-versions/${templateVersionId}/sections`,
     );
+    return response.data;
+  }
+
+  // Admin Templates browser: list every template version with its full
+  // regulatory breadcrumb (one call), and fetch a single template's nested
+  // section tree on demand.
+  async getTemplateCatalog(): Promise<RegTemplateCatalogEntry[]> {
+    const response: AxiosResponse<RegTemplateCatalogEntry[]> =
+      await this.api.get("/regulatory/templates");
+    return response.data;
+  }
+
+  async getTemplateVersionTree(
+    templateVersionId: string,
+  ): Promise<RegTemplateSectionNode[]> {
+    const response: AxiosResponse<RegTemplateSectionNode[]> =
+      await this.api.get(
+        `/regulatory/template-versions/${templateVersionId}/section-tree`,
+      );
     return response.data;
   }
 

@@ -370,6 +370,33 @@ export interface RegTemplateSection {
   is_required: boolean;
 }
 
+// A template section with its nested children — the /section-tree response.
+export interface RegTemplateSectionNode extends RegTemplateSection {
+  description?: string | null;
+  help_text?: string | null;
+  children: RegTemplateSectionNode[];
+}
+
+// A template version flattened with its regulatory breadcrumb — the
+// /regulatory/templates catalog response, used by the admin Templates browser.
+export interface RegTemplateCatalogEntry {
+  template_version_id: string;
+  version: string;
+  status: string;
+  is_latest: boolean;
+  sections_count: number;
+  country_name: string;
+  country_code: string;
+  authority_name: string;
+  authority_abbreviation?: string | null;
+  regulation_name: string;
+  submission_type_name: string;
+  submission_type_code: string;
+  submission_profile_id: string;
+  submission_profile_name: string;
+  submission_profile_code: string;
+}
+
 export interface RegValidationRule {
   id: string;
   template_version_id: string;
