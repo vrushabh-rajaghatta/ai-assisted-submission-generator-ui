@@ -16,6 +16,21 @@ import {
   AIModelInfo,
   DashboardStats,
   BatchUploadResult,
+  RegCountry,
+  RegAuthority,
+  RegIndustry,
+  RegRegulation,
+  RegSubmissionType,
+  RegRiskClassification,
+  RegSubmissionProfile,
+  RegSubmissionProfileDetail,
+  RegConfigurationType,
+  RegConfigurationProfile,
+  RegConfigurationProfileDetail,
+  RegTemplateVersion,
+  RegRequiredDocument,
+  RegTemplateSection,
+  RegValidationRule,
 } from "../types";
 
 // Strip empty-string optional fields so the backend (Pydantic) doesn't
@@ -727,6 +742,334 @@ class ApiService {
     const response = await this.api.get("/dashboard/activity", {
       params: { limit },
     });
+    return response.data;
+  }
+
+  // Regulatory API (guided submission wizard)
+  async getRegulatoryCountries(): Promise<RegCountry[]> {
+    const response: AxiosResponse<PaginatedResponse<RegCountry>> =
+      await this.api.get("/regulatory/countries", {
+        params: { is_active: true, page_size: 200 },
+      });
+    return response.data.items;
+  }
+
+  async getRegulatoryAuthorities(countryId: string): Promise<RegAuthority[]> {
+    const response: AxiosResponse<PaginatedResponse<RegAuthority>> =
+      await this.api.get("/regulatory/authorities", {
+        params: { country_id: countryId, is_active: true, page_size: 200 },
+      });
+    return response.data.items;
+  }
+
+  async getRegulatoryIndustries(): Promise<RegIndustry[]> {
+    const response: AxiosResponse<PaginatedResponse<RegIndustry>> =
+      await this.api.get("/regulatory/industries", {
+        params: { is_active: true, page_size: 200 },
+      });
+    return response.data.items;
+  }
+
+  async getRegulatoryRegulations(
+    authorityId: string,
+    industryId: string,
+  ): Promise<RegRegulation[]> {
+    const response: AxiosResponse<PaginatedResponse<RegRegulation>> =
+      await this.api.get("/regulatory/regulations", {
+        params: {
+          authority_id: authorityId,
+          industry_id: industryId,
+          status: "Active",
+          page_size: 200,
+        },
+      });
+    return response.data.items;
+  }
+
+  async getRegulatorySubmissionTypes(
+    regulationId: string,
+  ): Promise<RegSubmissionType[]> {
+    const response: AxiosResponse<PaginatedResponse<RegSubmissionType>> =
+      await this.api.get("/regulatory/submission-types", {
+        params: { regulation_id: regulationId, is_active: true, page_size: 200 },
+      });
+    return response.data.items;
+  }
+
+  async getRegulatoryRiskClasses(
+    submissionTypeId: string,
+  ): Promise<RegRiskClassification[]> {
+    const response: AxiosResponse<RegRiskClassification[]> = await this.api.get(
+      `/regulatory/submission-types/${submissionTypeId}/risk-classifications`,
+    );
+    return response.data;
+  }
+
+  async getRegulatorySubmissionProfiles(
+    submissionTypeId: string,
+  ): Promise<RegSubmissionProfile[]> {
+    const response: AxiosResponse<RegSubmissionProfile[]> = await this.api.get(
+      `/regulatory/submission-types/${submissionTypeId}/submission-profiles`,
+    );
+    return response.data;
+  }
+
+  // --- Submission Profile CRUD (admin) --- //
+  async getSubmissionProfile(id: string): Promise<RegSubmissionProfileDetail> {
+    const response: AxiosResponse<RegSubmissionProfileDetail> =
+      await this.api.get(`/regulatory/submission-profiles/${id}`);
+    return response.data;
+  }
+
+  async createSubmissionProfile(
+    payload: Partial<RegSubmissionProfileDetail> & {
+      submission_type_id: string;
+      name: string;
+      code: string;
+    },
+  ): Promise<RegSubmissionProfileDetail> {
+    const response: AxiosResponse<RegSubmissionProfileDetail> =
+      await this.api.post("/regulatory/submission-profiles", payload);
+    return response.data;
+  }
+
+  async updateSubmissionProfile(
+    id: string,
+    payload: Partial<RegSubmissionProfileDetail>,
+  ): Promise<RegSubmissionProfileDetail> {
+    const response: AxiosResponse<RegSubmissionProfileDetail> =
+      await this.api.put(`/regulatory/submission-profiles/${id}`, payload);
+    return response.data;
+  }
+
+  async deleteSubmissionProfile(id: string): Promise<MessageResponse> {
+    const response: AxiosResponse<MessageResponse> = await this.api.delete(
+      `/regulatory/submission-profiles/${id}`,
+    );
+    return response.data;
+  }
+
+  // --- Configuration Registry: Types (admin) --- //
+  async getConfigurationTypes(params?: {
+    search?: string;
+    is_active?: boolean;
+    page?: number;
+    page_size?: number;
+  }): Promise<{ items: RegConfigurationType[]; total: number }> {
+    const response: AxiosResponse<PaginatedResponse<RegConfigurationType>> =
+      await this.api.get("/configuration/configuration-types", {
+        params: { page_size: 20, ...params },
+      });
+    return { items: response.data.items, total: response.data.total };
+  }
+
+  // Convenience: all active configuration types (for dropdowns).
+  async getAllConfigurationTypes(): Promise<RegConfigurationType[]> {
+    const { items } = await this.getConfigurationTypes({
+      is_active: true,
+      page_size: 200,
+    });
+    return items;
+  }
+
+  async getConfigurationType(id: string): Promise<RegConfigurationType> {
+    const response: AxiosResponse<RegConfigurationType> = await this.api.get(
+      `/configuration/configuration-types/${id}`,
+    );
+    return response.data;
+  }
+
+  async createConfigurationType(
+    payload: { code: string; name: string; description?: string | null; is_active?: boolean },
+  ): Promise<RegConfigurationType> {
+    const response: AxiosResponse<RegConfigurationType> = await this.api.post(
+      "/configuration/configuration-types",
+      payload,
+    );
+    return response.data;
+  }
+
+  async updateConfigurationType(
+    id: string,
+    payload: Partial<RegConfigurationType>,
+  ): Promise<RegConfigurationType> {
+    const response: AxiosResponse<RegConfigurationType> = await this.api.put(
+      `/configuration/configuration-types/${id}`,
+      payload,
+    );
+    return response.data;
+  }
+
+  async deleteConfigurationType(id: string): Promise<MessageResponse> {
+    const response: AxiosResponse<MessageResponse> = await this.api.delete(
+      `/configuration/configuration-types/${id}`,
+    );
+    return response.data;
+  }
+
+  // --- Configuration Registry: Profiles (admin) --- //
+  async getConfigurationProfiles(params?: {
+    search?: string;
+    configuration_type_id?: string;
+    is_active?: boolean;
+    page?: number;
+    page_size?: number;
+  }): Promise<{ items: RegConfigurationProfile[]; total: number }> {
+    const response: AxiosResponse<PaginatedResponse<RegConfigurationProfile>> =
+      await this.api.get("/configuration/configuration-profiles", {
+        params: { page_size: 20, ...params },
+      });
+    return { items: response.data.items, total: response.data.total };
+  }
+
+  // Convenience: all active profiles for a configuration type (for dropdowns).
+  async getConfigurationProfilesByType(
+    configurationTypeId: string,
+  ): Promise<RegConfigurationProfile[]> {
+    const { items } = await this.getConfigurationProfiles({
+      configuration_type_id: configurationTypeId,
+      is_active: true,
+      page_size: 200,
+    });
+    return items;
+  }
+
+  async getConfigurationProfile(
+    id: string,
+  ): Promise<RegConfigurationProfileDetail> {
+    const response: AxiosResponse<RegConfigurationProfileDetail> =
+      await this.api.get(`/configuration/configuration-profiles/${id}`);
+    return response.data;
+  }
+
+  async createConfigurationProfile(
+    payload: Partial<RegConfigurationProfileDetail> & {
+      configuration_type_id: string;
+      name: string;
+      code: string;
+    },
+  ): Promise<RegConfigurationProfileDetail> {
+    const response: AxiosResponse<RegConfigurationProfileDetail> =
+      await this.api.post("/configuration/configuration-profiles", payload);
+    return response.data;
+  }
+
+  async updateConfigurationProfile(
+    id: string,
+    payload: Partial<RegConfigurationProfileDetail>,
+  ): Promise<RegConfigurationProfileDetail> {
+    const response: AxiosResponse<RegConfigurationProfileDetail> =
+      await this.api.put(`/configuration/configuration-profiles/${id}`, payload);
+    return response.data;
+  }
+
+  async deleteConfigurationProfile(id: string): Promise<MessageResponse> {
+    const response: AxiosResponse<MessageResponse> = await this.api.delete(
+      `/configuration/configuration-profiles/${id}`,
+    );
+    return response.data;
+  }
+
+  // --- Template Version CRUD (admin; children of a submission profile) --- //
+  async getProfileTemplateVersions(
+    profileId: string,
+  ): Promise<RegTemplateVersion[]> {
+    const response: AxiosResponse<RegTemplateVersion[]> = await this.api.get(
+      `/regulatory/submission-profiles/${profileId}/template-versions`,
+    );
+    return response.data;
+  }
+
+  async createTemplateVersion(
+    payload: Partial<RegTemplateVersion> & {
+      submission_profile_id: string;
+      version: string;
+    },
+  ): Promise<RegTemplateVersion> {
+    const response: AxiosResponse<RegTemplateVersion> = await this.api.post(
+      "/regulatory/template-versions",
+      payload,
+    );
+    return response.data;
+  }
+
+  async updateTemplateVersion(
+    id: string,
+    payload: Partial<RegTemplateVersion>,
+  ): Promise<RegTemplateVersion> {
+    const response: AxiosResponse<RegTemplateVersion> = await this.api.put(
+      `/regulatory/template-versions/${id}`,
+      payload,
+    );
+    return response.data;
+  }
+
+  async deleteTemplateVersion(id: string): Promise<MessageResponse> {
+    const response: AxiosResponse<MessageResponse> = await this.api.delete(
+      `/regulatory/template-versions/${id}`,
+    );
+    return response.data;
+  }
+
+  async setLatestTemplateVersion(id: string): Promise<RegTemplateVersion> {
+    const response: AxiosResponse<RegTemplateVersion> = await this.api.post(
+      `/regulatory/template-versions/${id}/set-latest`,
+    );
+    return response.data;
+  }
+
+  // Auto-resolves the latest active template version for a submission profile;
+  // throws 404 if none exists.
+  async getLatestTemplateVersion(
+    submissionProfileId: string,
+  ): Promise<RegTemplateVersion> {
+    const response: AxiosResponse<RegTemplateVersion> = await this.api.get(
+      "/regulatory/template-versions/latest",
+      { params: { submission_profile_id: submissionProfileId } },
+    );
+    return response.data;
+  }
+
+  async getTemplateVersionRequiredDocuments(
+    templateVersionId: string,
+  ): Promise<RegRequiredDocument[]> {
+    const response: AxiosResponse<RegRequiredDocument[]> = await this.api.get(
+      `/regulatory/template-versions/${templateVersionId}/required-documents`,
+    );
+    return response.data;
+  }
+
+  async getTemplateVersionSections(
+    templateVersionId: string,
+  ): Promise<RegTemplateSection[]> {
+    const response: AxiosResponse<RegTemplateSection[]> = await this.api.get(
+      `/regulatory/template-versions/${templateVersionId}/sections`,
+    );
+    return response.data;
+  }
+
+  async getTemplateVersionValidationRules(
+    templateVersionId: string,
+  ): Promise<RegValidationRule[]> {
+    const response: AxiosResponse<RegValidationRule[]> = await this.api.get(
+      `/regulatory/template-versions/${templateVersionId}/validation-rules`,
+    );
+    return response.data;
+  }
+
+  // Guided (atomic) submission creation. The backend resolves the regulatory
+  // chain + latest active template version and, in a single transaction, creates
+  // the submission, dossier sections, required-document placeholders and the
+  // validation checklist (rolling back entirely if any step fails).
+  async createSubmissionGuided(payload: {
+    project_id: string;
+    product_id: string;
+    submission_profile_id?: string;
+    submission_type_id?: string;
+    risk_classification_id?: string;
+    target_submission_date?: string;
+  }): Promise<any> {
+    const response = await this.api.post("/submissions/guided", payload);
     return response.data;
   }
 

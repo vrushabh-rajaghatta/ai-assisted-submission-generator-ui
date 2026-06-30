@@ -45,6 +45,7 @@ import {
   Product,
 } from "../../types";
 import { useSubmissions } from "../../hooks";
+import SubmissionWizard from "./SubmissionWizard";
 
 interface SubmissionManagementProps {
   projectId: string;
@@ -59,7 +60,7 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
   products,
   onSubmissionsChange,
 }) => {
-  const { createSubmission, updateSubmission, deleteSubmission, loading } =
+  const { updateSubmission, deleteSubmission, loading } =
     useSubmissions(projectId);
 
   // Dialog states
@@ -136,17 +137,6 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
   };
 
   // CRUD handlers
-  const handleCreateSubmission = async () => {
-    try {
-      setError(null);
-      await createSubmission(projectId, formData);
-      setCreateDialogOpen(false);
-      resetForm();
-      onSubmissionsChange?.();
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to create submission");
-    }
-  };
 
   const handleEditSubmission = async () => {
     if (!selectedSubmission) return;
@@ -254,111 +244,14 @@ const SubmissionManagement: React.FC<SubmissionManagementProps> = ({
 
   return (
     <>
-      {/* Create Submission Dialog */}
-      <Dialog
+      {/* Guided submission wizard (replaces manual template selection) */}
+      <SubmissionWizard
         open={createDialogOpen}
+        projectId={projectId}
+        products={products}
         onClose={() => setCreateDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Create New Submission</DialogTitle>
-        <DialogContent>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                mt: 1,
-              }}
-            >
-              <Alert severity="info" sx={{ mb: 1 }}>
-                A submission number will be auto-generated for the selected
-                product (e.g. 0000, 0001, 0002...).
-              </Alert>
-              <FormControl fullWidth required>
-                <InputLabel>Product</InputLabel>
-                <Select
-                  value={formData.product_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, product_id: e.target.value })
-                  }
-                  label="Product"
-                >
-                  {products.map((product) => (
-                    <MenuItem key={product.id} value={product.id}>
-                      {product.name} ({product.device_type})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel>Submission Type</InputLabel>
-                <Select
-                  value={formData.submission_type}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      submission_type: e.target.value,
-                    })
-                  }
-                  label="Submission Type"
-                >
-                  <MenuItem value="medical_device_license">
-                    Medical Device License
-                  </MenuItem>
-                  <MenuItem value="ivd_license">IVD License</MenuItem>
-                  <MenuItem value="medical_device_amendment">
-                    Medical Device Amendment
-                  </MenuItem>
-                  <MenuItem value="ivd_amendment">IVD Amendment</MenuItem>
-                </Select>
-              </FormControl>
-              <DatePicker
-                label="Target Submission Date"
-                value={
-                  formData.target_submission_date
-                    ? new Date(formData.target_submission_date)
-                    : null
-                }
-                onChange={(date) =>
-                  setFormData({
-                    ...formData,
-                    target_submission_date: date
-                      ? date.toISOString().split("T")[0]
-                      : "",
-                  })
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
-              />
-            </Box>
-          </LocalizationProvider>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setCreateDialogOpen(false)}
-            disabled={loading.isLoading}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreateSubmission}
-            variant="contained"
-            disabled={!formData.product_id || loading.isLoading}
-          >
-            {loading.isLoading ? "Creating..." : "Create Submission"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onCreated={() => onSubmissionsChange?.()}
+      />
 
       {/* Edit Submission Dialog */}
       <Dialog

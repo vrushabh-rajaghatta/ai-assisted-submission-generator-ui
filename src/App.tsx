@@ -29,6 +29,8 @@ import LoginPage from "./pages/auth/LoginPage";
 import ChangePasswordPage from "./pages/auth/ChangePasswordPage";
 import AdminPage from "./pages/admin/AdminPage";
 import UsersPage from "./pages/admin/UsersPage";
+import RegulatoryAdminPage from "./pages/admin/RegulatoryAdminPage";
+import ConfigurationRegistryPage from "./pages/admin/ConfigurationRegistryPage";
 
 // Error boundary
 import ErrorBoundary from "./components/common/ErrorBoundary";
@@ -122,6 +124,22 @@ const App: React.FC = () => {
                               element={
                                 <RequireAuth requireAdmin>
                                   <UsersPage />
+                                </RequireAuth>
+                              }
+                            />
+                            <Route
+                              path="/admin/regulatory"
+                              element={
+                                <RequireAuth requireAdmin>
+                                  <RegulatoryAdminPage />
+                                </RequireAuth>
+                              }
+                            />
+                            <Route
+                              path="/admin/configuration"
+                              element={
+                                <RequireAuth requireAdmin>
+                                  <ConfigurationRegistryPage />
                                 </RequireAuth>
                               }
                             />

@@ -23,6 +23,8 @@ import {
   AdminPanelSettings as AdminIcon,
   Business as OrgIcon,
   People as UsersIcon,
+  AccountTree as RegulatoryIcon,
+  Tune as ConfigurationIcon,
   ExpandLess,
   ExpandMore,
 } from "@mui/icons-material";
@@ -81,6 +83,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       label: "Users",
       path: "/admin/users",
       icon: UsersIcon,
+    },
+    {
+      id: "admin-regulatory",
+      label: "Regulatory",
+      path: "/admin/regulatory",
+      icon: RegulatoryIcon,
+    },
+    {
+      id: "admin-configuration",
+      label: "Configuration",
+      path: "/admin/configuration",
+      icon: ConfigurationIcon,
     },
   ];
 

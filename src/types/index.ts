@@ -231,6 +231,155 @@ export interface MessageResponse {
   message: string;
 }
 
+// ---------------------------------------------------------------------------
+// Regulatory engine (guided submission wizard)
+// ---------------------------------------------------------------------------
+export interface RegCountry {
+  id: string;
+  code: string;
+  name: string;
+  is_active: boolean;
+}
+
+export interface RegAuthority {
+  id: string;
+  country_id: string;
+  name: string;
+  abbreviation?: string | null;
+  is_active: boolean;
+}
+
+export interface RegIndustry {
+  id: string;
+  name: string;
+  code: string;
+  is_active: boolean;
+}
+
+export interface RegRegulation {
+  id: string;
+  authority_id: string;
+  industry_id: string;
+  name: string;
+  code: string;
+  version?: string | null;
+  status: string;
+  effective_date?: string | null;
+}
+
+export interface RegSubmissionType {
+  id: string;
+  regulation_id: string;
+  name: string;
+  code: string;
+  sequence_prefix?: string | null;
+  allows_multiple_sequences: boolean;
+  is_active: boolean;
+}
+
+export interface RegRiskClassification {
+  id: string;
+  code: string;
+  name: string;
+  sort_order: number;
+}
+
+export interface RegSubmissionProfile {
+  id: string;
+  submission_type_id: string;
+  name: string;
+  code: string;
+  is_active: boolean;
+}
+
+// Full profile (detail GET / create / update). Strategy configuration is now
+// referenced from the Configuration Registry via four ConfigurationProfile FKs.
+export interface RegSubmissionProfileDetail extends RegSubmissionProfile {
+  description?: string | null;
+  // Configuration Registry references
+  export_profile_id?: string | null;
+  workflow_profile_id?: string | null;
+  validation_profile_id?: string | null;
+  ai_pipeline_profile_id?: string | null;
+  // Resolved nested summaries (read-only)
+  export_profile?: RegConfigurationProfile | null;
+  workflow_profile?: RegConfigurationProfile | null;
+  validation_profile?: RegConfigurationProfile | null;
+  ai_pipeline_profile?: RegConfigurationProfile | null;
+}
+
+// ---------------------------------------------------------------------------
+// Configuration Registry
+// ---------------------------------------------------------------------------
+export interface RegConfigurationType {
+  id: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  profiles_count?: number | null;
+}
+
+export interface RegConfigurationProfile {
+  id: string;
+  configuration_type_id: string;
+  name: string;
+  code: string;
+  version?: string | null;
+  is_active: boolean;
+}
+
+// Full configuration profile (detail GET / create / update).
+export interface RegConfigurationProfileDetail extends RegConfigurationProfile {
+  description?: string | null;
+  configuration?: Record<string, any> | null;
+  created_at?: string;
+  updated_at?: string;
+  configuration_type?: RegConfigurationType | null;
+}
+
+export interface RegTemplateVersion {
+  id: string;
+  submission_profile_id: string;
+  version: string;
+  status: string;
+  effective_date?: string | null;
+  expiry_date?: string | null;
+  release_notes?: string | null;
+  is_latest: boolean;
+}
+
+export interface RegRequiredDocument {
+  id: string;
+  template_version_id: string;
+  name: string;
+  required: boolean;
+  minimum_files: number;
+  maximum_files?: number | null;
+}
+
+export interface RegTemplateSection {
+  id: string;
+  template_version_id: string;
+  parent_id?: string | null;
+  section_number: string;
+  title: string;
+  order: number;
+  is_required: boolean;
+}
+
+export interface RegValidationRule {
+  id: string;
+  template_version_id: string;
+  target_type: string;
+  target_reference?: string | null;
+  rule_type: string;
+  severity: string;
+  is_active: boolean;
+}
+
 // Form types
 export interface ProjectFormData {
   name: string;
