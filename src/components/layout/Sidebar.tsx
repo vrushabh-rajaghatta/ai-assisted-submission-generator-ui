@@ -284,7 +284,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
           align="center"
           display="block"
         >
-          Health Canada IMDRF
+          Regulatory Operating System
         </Typography>
         <Typography
           variant="caption"

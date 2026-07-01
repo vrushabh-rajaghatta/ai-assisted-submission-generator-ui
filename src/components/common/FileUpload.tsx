@@ -66,6 +66,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         const result = await uploadFile(
           acceptedFiles[0],
           projectId,
+          undefined,
           submissionId,
           'document_upload'
         );
@@ -77,6 +78,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         const result = await uploadMultipleFiles(
           acceptedFiles,
           projectId,
+          undefined,
           submissionId
         );
         if (onUploadComplete) {

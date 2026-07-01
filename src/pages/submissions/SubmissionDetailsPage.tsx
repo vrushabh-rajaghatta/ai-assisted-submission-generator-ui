@@ -469,9 +469,9 @@ const SubmissionDetailsPage: React.FC = () => {
                     <Divider />
                     <ListItem>
                       <ListItemText
-                        primary="Health Canada Reference"
+                        primary="Authority Reference"
                         secondary={
-                          submission.health_canada_reference || "Not assigned"
+                          submission.authority_reference || "Not assigned"
                         }
                       />
                     </ListItem>

@@ -36,7 +36,7 @@ export interface Submission {
   sequence_number: string;
   submission_type?: string;
   status: SubmissionStatus;
-  health_canada_reference?: string;
+  authority_reference?: string;
   target_submission_date?: string;
   created_at: string;
   updated_at: string;
